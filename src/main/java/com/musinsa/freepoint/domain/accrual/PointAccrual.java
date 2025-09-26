@@ -1,15 +1,12 @@
 
 package com.musinsa.freepoint.domain.accrual;
+
 import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
-import com.musinsa.freepoint.common.PointKeyGenerator;
-import com.musinsa.freepoint.domain.model.Enums.*;
+import com.musinsa.freepoint.domain.model.Enums.AccrualStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-
-import static java.util.Objects.requireNonNull;
 
 @Entity
 @Getter
@@ -59,23 +56,6 @@ public class PointAccrual {
     @Version
     private int version;
 
-    public static PointAccrual create(String userId, long amount, boolean manual, String sourceType, String sourceId, LocalDateTime expiresAt) {
-        return PointAccrual.builder()
-                .pointKey(PointKeyGenerator.generatePointKey(userId))
-                .userId(userId)
-                .amount(amount)
-                .remainAmount(amount)
-                .manual(manual)
-                .sourceType(sourceType)
-                .sourceId(sourceId)
-                .expireAt(LocalDateTime.now())
-                .status(AccrualStatus.ACTIVE.name())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-    }
-
-
     public static PointAccrual create(AccrualRequest request) {
         //requireNonNull(request.userId(), "userId");
         //requireNonNull(request.amount(), "amount");
@@ -98,6 +78,23 @@ public class PointAccrual {
 
         return accrual;
     }
+
+    public static PointAccrual create(String userId, long amount, boolean manual, String sourceType, String sourceId, LocalDateTime expiresAt) {
+        return PointAccrual.builder()
+                .pointKey(PointKeyGenerator.generatePointKey(userId))
+                .userId(userId)
+                .amount(amount)
+                .remainAmount(amount)
+                .manual(manual)
+                .sourceType(sourceType)
+                .sourceId(sourceId)
+                .expireAt(LocalDateTime.now())
+                .status(AccrualStatus.ACTIVE.name())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
 
     public boolean isExpired(LocalDateTime now) {
         return expireAt != null && now.isAfter(expireAt);

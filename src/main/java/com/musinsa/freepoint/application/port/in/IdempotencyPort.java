@@ -1,4 +1,4 @@
-package com.musinsa.freepoint.application.port;
+package com.musinsa.freepoint.application.port.in;
 
 public interface IdempotencyPort {
     boolean existsByKey(String idempotencyKey);

@@ -1,0 +1,8 @@
+
+@startuml
+!theme plain
+entity point_wallet { * user_id : VARCHAR(64) <<PK>> }
+entity point_accrual { * id : BIGINT <<PK>> }
+entity point_usage { * id : BIGINT <<PK>> }
+entity point_usage_detail { * id : BIGINT <<PK>> }
+@enduml

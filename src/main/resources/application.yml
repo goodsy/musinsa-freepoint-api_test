@@ -1,0 +1,30 @@
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:freepoint;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc.time_zone: UTC
+  h2:
+    console:
+      enabled: true
+  #flyway:
+  #  enabled: true
+
+point:
+  policy:
+    min-accrual-per-txn: 1
+    max-accrual-per-txn: 100000
+    max-wallet-balance: 10000000
+    default-expiry-days: 365
+    min-expiry-days: 1
+    max-expiry-days: 1824
+
+server:
+  port: 8080

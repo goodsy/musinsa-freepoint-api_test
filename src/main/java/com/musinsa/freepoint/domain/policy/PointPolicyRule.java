@@ -1,4 +1,4 @@
-package com.musinsa.freepoint.domain;
+package com.musinsa.freepoint.domain.policy;
 
 import jakarta.persistence.*;
 import lombok.Getter;

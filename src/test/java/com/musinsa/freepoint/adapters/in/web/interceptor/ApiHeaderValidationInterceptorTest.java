@@ -1,4 +1,4 @@
-package com.musinsa.freepoint.common;
+package com.musinsa.freepoint.adapters.in.web.interceptor;
 
 import com.musinsa.freepoint.common.util.HmacUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,11 +10,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-
-
 class ApiHeaderValidationInterceptorTest {
 
-    private final ApiHeaderValidationInterceptor interceptor = new ApiHeaderValidationInterceptor();
+    private final HeaderValidationInterceptor interceptor = new HeaderValidationInterceptor();
 
 
     private String API_KEY;
@@ -25,7 +23,7 @@ class ApiHeaderValidationInterceptorTest {
     @BeforeEach
     void setUp() {
         API_KEY = "8vYgD+ibnpjKOL770UzCPnI+cX2bQUStvon+ewt00Hw=";
-        API_ID = "musinaId";
+        API_ID = "musinsaId";
         method = "POST";
         uri = "/api/test";
     }

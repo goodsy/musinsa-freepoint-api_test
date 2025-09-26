@@ -1,4 +1,4 @@
-package com.musinsa.freepoint.common.util;
+package com.musinsa.freepoint.domain.accrual;
 
 import java.util.UUID;
 

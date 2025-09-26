@@ -1,4 +1,4 @@
-package com.musinsa.freepoint.common;
+package com.musinsa.freepoint.adapters.in.web.interceptor;
 
 import com.musinsa.freepoint.common.util.HmacUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
-public class ApiHeaderValidationInterceptor implements HandlerInterceptor {
+public class HeaderValidationInterceptor implements HandlerInterceptor {
 
     //해당 값은 무신사 무료 포인트 시스템 사용하는 API 정보 별도 관리
     private static final String API_ID = "musinaId";                                        // 실제 값으로 교체

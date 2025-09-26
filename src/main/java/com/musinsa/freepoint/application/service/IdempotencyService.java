@@ -1,6 +1,6 @@
 package com.musinsa.freepoint.application.service;
 
-import com.musinsa.freepoint.application.port.IdempotencyPort;
+import com.musinsa.freepoint.application.port.in.IdempotencyPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
