@@ -1,0 +1,39 @@
+# 디폴트 무시된 파일
+/shelf/
+/workspace.xml
+# 에디터 기반 HTTP 클라이언트 요청
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+
+# IDE 관련 파일
+.idea/
+.vscode/
+*.iml
+
+# 빌드 산출물
+/build/
+/out/
+/dist/
+/target/
+*.class
+
+# OS 자동 생성 파일
+.DS_Store
+Thumbs.db
+
+# 로그 및 환경 파일
+*.log
+*.tmp
+*.bak
+logs/
+.env
+.env.local
+application-local.yml
+
+# 개인 설정 파일
+*.swp
+*.swo
+*.zip

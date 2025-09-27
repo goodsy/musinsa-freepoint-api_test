@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "policy_rule")
+@Table(name = "point_policy_rule")
 public class PointPolicyRule {
     @EmbeddedId
     private PointPolicyRuleId id;

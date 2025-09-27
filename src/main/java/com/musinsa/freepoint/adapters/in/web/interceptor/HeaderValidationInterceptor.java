@@ -1,5 +1,6 @@
 package com.musinsa.freepoint.adapters.in.web.interceptor;
 
+import com.musinsa.freepoint.adapters.in.web.ApiHeaderConstants;
 import com.musinsa.freepoint.common.util.HmacUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,10 +31,10 @@ public class HeaderValidationInterceptor implements HandlerInterceptor {
     // 필수 헤더값 체크
     private boolean checkRequiredHeaders(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String authorization = request.getHeader("Authorization");
-        String apiId = request.getHeader("X-MUSINSA-ID");
-        String idempotencyKey = request.getHeader("Itempotency-Key");
+        String apiId = request.getHeader(ApiHeaderConstants.HEADER_MUSINSA_ID);
+        String idempotencyKey = request.getHeader(ApiHeaderConstants.IDEMPOTENCY_KEY);
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        if (authorization == null || !authorization.startsWith(ApiHeaderConstants.HEADER_AUTHORIZATION_PREFIX)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing or invalid Authorization header");
             return false;
         }

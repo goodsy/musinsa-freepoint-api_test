@@ -1,8 +1,8 @@
 package com.musinsa.freepoint.application.service;
 
 import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
-import com.musinsa.freepoint.adapters.out.persistence.JpaPointAccrualRepository;
-import com.musinsa.freepoint.adapters.out.persistence.JpaPointWalletRepository;
+import com.musinsa.freepoint.adapters.out.persistence.PointAccrualRepository;
+import com.musinsa.freepoint.adapters.out.persistence.PointWalletRepository;
 import com.musinsa.freepoint.application.port.in.AccrualCommandPort.CreateAccrual;
 import com.musinsa.freepoint.domain.accrual.PointAccrual;
 import com.musinsa.freepoint.domain.accural.AccrualRequestFactory;
@@ -23,10 +23,10 @@ import static org.mockito.Mockito.*;
 class AccrualUseCaseValidationTest {
 
     @Mock
-    private JpaPointAccrualRepository accrualRepo;
+    private PointAccrualRepository accrualRepo;
 
     @Mock
-    private JpaPointWalletRepository walletRepo;
+    private PointWalletRepository walletRepo;
 
     @Mock
     private PointPolicyService pointPolicyService;

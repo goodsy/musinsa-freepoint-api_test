@@ -2,11 +2,12 @@
 package com.musinsa.freepoint.domain.accrual;
 
 import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
-import com.musinsa.freepoint.domain.model.Enums.AccrualStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+
+import static org.springframework.util.Assert.state;
 
 @Entity
 @Getter
@@ -47,10 +48,10 @@ public class PointAccrual {
     private String idempotencyKey;
     private String createdBy;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     @Version
@@ -69,9 +70,11 @@ public class PointAccrual {
 
         accrual.sourceType = request.sourceType();
         accrual.sourceId = request.sourceId();
+        accrual.manual = request.manual();
 
         LocalDateTime today = LocalDateTime.now();
         accrual.expireAt = today.plusDays(request.expiryDays());
+        accrual.updatedAt = today;
         accrual.createdAt = today;
         accrual.status = AccrualStatus.ACTIVE.name();
 
@@ -79,13 +82,29 @@ public class PointAccrual {
         return accrual;
     }
 
-    public static PointAccrual create(String userId, long amount, boolean manual, String sourceType, String sourceId, LocalDateTime expiresAt) {
+    public static PointAccrual createReversal(String userId, long amount, String sourceId, int expiryDays) {
         return PointAccrual.builder()
                 .pointKey(PointKeyGenerator.generatePointKey(userId))
                 .userId(userId)
                 .amount(amount)
                 .remainAmount(amount)
-                .manual(manual)
+                .manual(false)
+                .sourceType(AccrualSourceType.REVERSAL.name())
+                .sourceId(sourceId)
+                .expireAt(LocalDateTime.now().plusDays(expiryDays))
+                .status(AccrualStatus.ACTIVE.name())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    /*public static PointAccrual createReversal(String userId, long amount) {
+        return PointAccrual.builder()
+                .pointKey(PointKeyGenerator.generatePointKey(userId))
+                .userId(userId)
+                .amount(amount)
+                .remainAmount(amount)
+                .manual(false)
                 .sourceType(sourceType)
                 .sourceId(sourceId)
                 .expireAt(LocalDateTime.now())
@@ -93,15 +112,30 @@ public class PointAccrual {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }*/
+
+    public boolean isActive() {
+        return this.status == AccrualStatus.ACTIVE.name();
     }
 
-
-    public boolean isExpired(LocalDateTime now) {
-        return expireAt != null && now.isAfter(expireAt);
+    public boolean isExceedAmount(long amount) {
+        return this.amount < amount ;
     }
 
-    public void allocate(long amount) {
-        if (amount < 0 || amount > remainAmount) throw new IllegalArgumentException("invalid allocation");
+    public boolean isExpired() {
+        return expireAt != null && LocalDateTime.now().isAfter(expireAt);
+    }
+
+    public void cancel() {
+        if (this.remainAmount != this.amount) {
+            throw new IllegalStateException("이미 일부가 사용된 적립금은 취소할 수 없습니다.");
+        }
+        this.status = AccrualStatus.CANCELED.name();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void use(long amount) {
+        if (amount < 0 || amount > remainAmount) throw new IllegalArgumentException("잔액 부족");
         this.remainAmount -= amount;
         this.updatedAt = LocalDateTime.now();
     }

@@ -1,19 +1,19 @@
 package com.musinsa.freepoint.adapters.in.web.interceptor;
 
+import com.musinsa.freepoint.adapters.in.web.ApiHeaderConstants;
 import com.musinsa.freepoint.common.util.HmacUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 class ApiHeaderValidationInterceptorTest {
 
     private final HeaderValidationInterceptor interceptor = new HeaderValidationInterceptor();
-
 
     private String API_KEY;
     private String API_ID;
@@ -29,14 +29,14 @@ class ApiHeaderValidationInterceptorTest {
     }
 
     @Test
-    void hmac_정상_검증_성공() throws Exception {
-
+    @DisplayName("HMAC 정상 검증 성공")
+    void hmacValidationSuccess() throws Exception {
         String requestData = method + uri;
         String hmac = HmacUtil.generateHmac(requestData, API_KEY);
 
         MockHttpServletRequest request = new MockHttpServletRequest(method, uri);
         request.addHeader("Authorization", "Bearer " + hmac);
-        request.addHeader("X-MUSINSA-ID", API_ID);
+        request.addHeader(ApiHeaderConstants.HEADER_MUSINSA_ID, API_ID);
         request.addHeader("Itempotency-Key", "test-key");
 
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -46,10 +46,11 @@ class ApiHeaderValidationInterceptorTest {
     }
 
     @Test
-    void hmac_불일치_실패() throws Exception {
+    @DisplayName("HMAC 불일치 실패")
+    void hmacValidationFail() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test");
         request.addHeader("Authorization", "Bearer invalidhmac");
-        request.addHeader("X-MUSINSA-ID", API_ID);
+        request.addHeader(ApiHeaderConstants.HEADER_MUSINSA_ID, API_ID);
         request.addHeader("Itempotency-Key", "test-key");
 
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -60,10 +61,11 @@ class ApiHeaderValidationInterceptorTest {
     }
 
     @Test
-    void 필수_헤더_누락_실패() throws Exception {
+    @DisplayName("필수 헤더 누락 실패")
+    void missingRequiredHeaderFail() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test");
-        // Authorization 헤더 누락
-        request.addHeader("X-MUSINSA-ID", API_ID);
+        // Authorization header is missing
+        request.addHeader(ApiHeaderConstants.HEADER_MUSINSA_ID, API_ID);
         request.addHeader("Itempotency-Key", "test-key");
 
         MockHttpServletResponse response = new MockHttpServletResponse();

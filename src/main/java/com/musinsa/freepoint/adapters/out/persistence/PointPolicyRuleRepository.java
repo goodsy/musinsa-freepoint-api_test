@@ -19,8 +19,8 @@ public interface PointPolicyRuleRepository extends JpaRepository<PointPolicyRule
         FROM point_policy_rule p
        WHERE p.policy_key = :policyKey
          AND (
-               (p.scope = 'USER'   AND p.subject_key = :scopeId) OR
-               (p.scope = 'GLOBAL' AND p.subject_key = 'ALL')
+               (p.scope = 'USER'   AND p.scope_id = :scopeId) OR
+               (p.scope = 'GLOBAL' AND p.scope_id = 'ALL')
              )
        ORDER BY CASE p.scope WHEN 'USER' THEN 1 ELSE 2 END
        LIMIT 1

@@ -1,5 +1,6 @@
 package com.musinsa.freepoint.common.idempotency;
 
+import com.musinsa.freepoint.adapters.in.web.ApiHeaderConstants;
 import com.musinsa.freepoint.application.service.IdempotencyService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +15,21 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 @RequiredArgsConstructor
 public class IdempotencyAspect {
-    private final IdempotencyService idempotencyService;
     private final HttpServletRequest request;
+    private final IdempotencyKeyStore keyStore;
 
-    @Around("@annotation(com.musinsa.freepoint.common.idempotency.Idempotent)")
+    @Around("@annotation(com.musinsa.freepoint.common.idempotency.IdempotencyKey)")
     public Object checkIdempotency(ProceedingJoinPoint joinPoint) throws Throwable {
-        String key = request.getHeader("Idempotency-Key");
+        String key = request.getHeader(ApiHeaderConstants.IDEMPOTENCY_KEY);
+
         if (key == null || key.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Idempotency-Key 헤더가 필요합니다.");
         }
-        if (!idempotencyService.checkAndSaveKey(key)) {
+        if (keyStore.exists(key)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 처리된 요청입니다.");
         }
+
+        keyStore.save(key);
         return joinPoint.proceed();
     }
 }

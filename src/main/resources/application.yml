@@ -28,3 +28,16 @@ point:
 
 server:
   port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/app.log
+
+test:
+  api-key: "8vYgD+ibnpjKOL770UzCPnI+cX2bQUStvon+ewt00Hw="
+  itempotency-key: "8vYgD+ibnpjKOL770UzCPnI+cX2bQUStvon+ewt00Hw="

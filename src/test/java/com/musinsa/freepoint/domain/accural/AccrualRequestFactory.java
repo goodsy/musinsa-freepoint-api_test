@@ -1,5 +1,6 @@
 package com.musinsa.freepoint.domain.accural;
 import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
+import com.musinsa.freepoint.application.port.in.AccrualCommandPort;
 
 public final class AccrualRequestFactory {
 
@@ -9,15 +10,22 @@ public final class AccrualRequestFactory {
         return new AccrualRequest(userId, amount, expiryDays, manual, sourceType, sourceId);
     }
 
-    public static AccrualRequest create(String userId, long amount) {
-        return create(userId, amount, 7, false, "ORDER", "order-123");
+    public static AccrualRequest createWithDefalut(String userId, long amount) {
+        return createWithManual(userId, amount, false);
     }
 
-    public static AccrualRequest withExpiry(String userId, long amount, int expiryDays) {
+    public static AccrualRequest createWithManual(String userId, long amount, boolean manual) {
+        return create(userId, amount, 7, manual, "ORDER", "order-123");
+    }
+
+    public static AccrualRequest createWithExpiry(String userId, long amount, int expiryDays) {
+        return createWithExpiry(userId, amount, expiryDays, false);
+    }
+
+    public static AccrualRequest createWithExpiry(String userId, long amount, int expiryDays, boolean manual) {
         return create(userId, amount, expiryDays, false, "ORDER", "order-123");
     }
 
-    public static AccrualRequest manual(String userId, long amount, boolean manual) {
-        return create(userId, amount, 7, manual, "ORDER", "order-123");
-    }
+
+
 }

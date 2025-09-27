@@ -1,8 +1,11 @@
 package com.musinsa.freepoint.adapters.out.persistence;
 
-import com.musinsa.freepoint.common.logging.ApiLog;
+import com.musinsa.freepoint.domain.log.ApiLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IdempotencyLogRepository extends JpaRepository<ApiLog, Long> {
+import java.util.Optional;
+
+public interface IdempotencyLogRepository extends JpaRepository<ApiLog, String> {
     boolean existsByIdempotencyKey(String idempotencyKey);
+    Optional<ApiLog> findByIdempotencyKey(String idempotencyKey);
 }

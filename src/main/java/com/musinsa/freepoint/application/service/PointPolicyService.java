@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PointPolicyService {
 
-    private final PointPolicyRuleRepository repository;
+    private final PointPolicyRuleRepository policyRuleRepo;
     private final PointPolicyConfig config;
 
     private long toLong(String v, long fallback) {
@@ -29,45 +29,38 @@ public class PointPolicyService {
         }
     }
 
-    private static final String K_WALLET_MAX = "wallet.maxBalance";
-    private static final String K_MIN_PER_TXN = "accrual.minPerTxn";
-    private static final String K_MAX_PER_TXN = "accrual.maxPerTxn";
-    //private static final String K_EXP_MIN = "expiry.minDays";
-    //private static final String K_EXP_MAX = "expiry.maxDays";
-    private static final String K_EXP_DEFAULT = "expiry.defaultDays";
+    private static final String MAX_WALLET_BALANCE = "wallet.maxBalance";
+    private static final String MIN_ACCRUAL_PER_TXN = "accrual.minPerTxn";
+    private static final String MAX_ACCRUAL_PER_TXN  = "accrual.maxPerTxn";
+    private static final String MAX_EXPIRY_DAYS = "expiry.maxDays";
 
     @Cacheable(cacheNames = "policy", key = "'k:' + #policyKey + ':u:' + (#scopeId?:''))")
     public String bestValue(String policyKey, String scopeId) {
-        return repository.findBestValue(policyKey, scopeId).orElse(null);
+        return policyRuleRepo.findBestValue(policyKey, scopeId).orElse(null);
     }
 
     public long maxWalletBalanceFor(String scopeId) {
-        String v = bestValue(K_WALLET_MAX, scopeId);
+        String v = bestValue(MAX_WALLET_BALANCE, scopeId);
         return toLong(v, config.getMaxWalletBalance());
     }
 
     public long minAccrualPerTxn() {
-        String v = bestValue(K_MIN_PER_TXN, null);
+        String v = bestValue(MIN_ACCRUAL_PER_TXN, null);
         return toLong(v, config.getMinAccrualPerTxn());
     }
 
     public long maxAccrualPerTxn() {
-        String v = bestValue(K_MAX_PER_TXN, null);
+        String v = bestValue(MAX_ACCRUAL_PER_TXN, null);
         return toLong(v, config.getMaxAccrualPerTxn());
     }
 
     public int defaultExpiryDays() {
-        String v = bestValue(K_EXP_DEFAULT, null);
+        String v = bestValue(MAX_EXPIRY_DAYS, null);
         return toInt(v, config.getDefaultExpiryDays());
     }
 
-    /*public int minExpiryDays(String scopeId) {
-        String v = bestValue(K_EXP_MIN, scopeId);
-        return toInt(v, config.getMinExpiryDays());
+    public int maxExpiryDays() {
+        return config.getMinExpiryDays();
     }
 
-    public int maxExpiryDays(String scopeId) {
-        String v = bestValue(K_EXP_MAX, scopeId);
-        return toInt(v, config.getMaxExpiryDays());
-    }*/
 }

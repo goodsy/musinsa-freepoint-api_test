@@ -1,14 +1,18 @@
 
 package com.musinsa.freepoint.domain.usage;
 
-import com.musinsa.freepoint.domain.model.Enums.UsageStatus;
 import jakarta.persistence.*;
-
-import java.time.Instant;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Setter
+@Getter
+@Data
 @Table(name = "point_usage")
 public class PointUsage {
     @Id
@@ -19,41 +23,29 @@ public class PointUsage {
     private long amount;
     private String status;
     private String idempotencyKey;
-    private Instant usedAt = Instant.now();
-    private Instant updatedAt = Instant.now();
+    private LocalDateTime usedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    private Long reversalOfId;
+
     @OneToMany(mappedBy = "usageId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointUsageDetail> details = new ArrayList<>();
 
-    public static PointUsage create(String userId, String orderNo, long amount) {
-        PointUsage u = new PointUsage();
-        u.userId = userId;
-        u.orderNo = orderNo;
-        u.amount = amount;
-        u.status = UsageStatus.USED.name();
-        return u;
+    public static PointUsage create(String userId, String orderNo, long amount, String status) {
+        PointUsage usage = new PointUsage();
+        usage.userId = userId;
+        usage.orderNo = orderNo;
+        usage.amount = amount;
+        usage.status = status;
+
+        LocalDateTime today = LocalDateTime.now();
+        usage.usedAt = today;
+        usage.updatedAt = today;
+
+        return usage;
     }
 
-    public void addDetail(Long accrualId, long amount) {
-        details.add(PointUsageDetail.of(this.id, accrualId, amount));
+    public void addDetail(String pointKey, long amount) {
+        details.add(PointUsageDetail.create(this.id, pointKey, amount));
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getOrderNo() {
-        return orderNo;
-    }
-
-    public long getAmount() {
-        return amount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
 }
