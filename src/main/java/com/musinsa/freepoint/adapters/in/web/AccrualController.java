@@ -10,6 +10,8 @@ import com.musinsa.freepoint.application.port.in.AccrualCommandPort.CancelAccrua
 import com.musinsa.freepoint.application.service.AccrualUseCase;
 import com.musinsa.freepoint.common.idempotency.IdempotencyKey;
 import com.musinsa.freepoint.domain.accrual.PointAccrual;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,16 +25,25 @@ public class AccrualController {
 
     @PostMapping
     @IdempotencyKey
-    public AccrualResponse accrue(@RequestBody AccrualRequest request) {
+    public ResponseEntity<ApiSuccessResponse<AccrualResponse>> accrue(@Valid @RequestBody AccrualRequest request) {
 
         PointAccrual accrual = useCase.accrue(new CreateAccrual(request));
 
-        return new AccrualResponse(
+        AccrualResponse response = new AccrualResponse(
                 accrual.getPointKey(),
                 accrual.getUserId(),
                 accrual.getAmount(),
                 accrual.getExpireAt()
         );
+
+        return ResponseEntity.ok(ApiSuccessResponse.of(response));
+
+        /*return new AccrualResponse(
+                accrual.getPointKey(),
+                accrual.getUserId(),
+                accrual.getAmount(),
+                accrual.getExpireAt()
+        );*/
     }
 
 

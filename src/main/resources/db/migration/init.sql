@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS point_wallet (
     user_id VARCHAR(10) PRIMARY KEY COMMENT '사용자 식별자 (지갑 소유자)',
     total_balance BIGINT NOT NULL DEFAULT 0 COMMENT '총 보유 포인트 잔액 (만료/상태 무관, 사용 가능 총합)',
     manual_balance BIGINT NOT NULL DEFAULT 0 COMMENT '관리자 수기 지급 포인트 잔액 (우선 사용 대상)',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시간',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '마지막 업데이트 시간'
+    created_at TIMESTAMP DEFAULT TIMESTAMP  COMMENT '생성 시간',
+    updated_at TIMESTAMP DEFAULT TIMESTAMP  COMMENT '마지막 업데이트 시간'
 ) COMMENT='포인트 지갑 요약: 사용자별 전체/수기 포인트 잔액 스냅샷 관리';
 
 
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS point_accrual (
     expires_at TIMESTAMP NOT NULL COMMENT '만료일시',
     status VARCHAR(20) NOT NULL COMMENT '상태 (ACTIVE, CANCELED, EXPIRED)',
     memo VARCHAR(100) COMMENT '메모',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시간',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '수정 시간'
+    created_at TIMESTAMP DEFAULT TIMESTAMP  COMMENT '생성 시간',
+    updated_at TIMESTAMP DEFAULT TIMESTAMP  COMMENT '수정 시간'
 ) COMMENT='포인트 적립 원장: 사용자별 포인트 적립 이벤트 상세 내역 관리';
 
 -- 사용 배분 정렬 최적화
