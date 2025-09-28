@@ -12,7 +12,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/api/v1/points")
+@RequestMapping("/api/v1/demo")
 public class ApiTestController {
     @GetMapping("/health") public Map<String,Object> health(){
         return Map.of("status","OK");

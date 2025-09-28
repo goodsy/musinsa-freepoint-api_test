@@ -2,21 +2,25 @@
 package com.musinsa.freepoint.application.service;
 
 import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
+import com.musinsa.freepoint.adapters.in.web.exception.ApiErrorCode;
 import com.musinsa.freepoint.adapters.out.persistence.PointAccrualRepository;
 import com.musinsa.freepoint.adapters.out.persistence.PointWalletRepository;
 import com.musinsa.freepoint.application.port.in.AccrualCommandPort.CreateAccrual;
 import com.musinsa.freepoint.application.port.in.AccrualCommandPort.CancelAccrual;
+import com.musinsa.freepoint.domain.DomainException;
 import com.musinsa.freepoint.domain.accrual.PointAccrual;
-import com.musinsa.freepoint.domain.accrual.exception.ExpiryPolicyViolationException;
-import com.musinsa.freepoint.domain.accrual.exception.InvalidAccrualAmountException;
 import com.musinsa.freepoint.domain.wallet.PointWallet;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
 public class AccrualUseCase {
+    private static final Logger log = LogManager.getLogger(AccrualUseCase.class);
     private final PointAccrualRepository accrualRepository;
     private final PointWalletRepository walletRepository;
     private final PointPolicyService policyService;
@@ -37,7 +41,7 @@ public class AccrualUseCase {
         validateWalletBalance(userId, wallet.getTotalBalance(), amount);
 
         //3) 만료일 범위 체크
-        int resolvedExpiryDays = resolveExpiryDays(request.expiryDays()); //요청값이 안들아감..
+        int resolvedExpiryDays = resolveExpiryDays(request.expiryDays());
         validateExpiryDays(resolvedExpiryDays);
 
         PointAccrual pointAccrual = PointAccrual.create(request);
@@ -54,29 +58,30 @@ public class AccrualUseCase {
 
         String userId = cancelAccrual.request().userId();
         String pointKey = cancelAccrual.request().pointKey();
-        long cancelAmount = cancelAccrual.request().amount();
+        //long cancelAmount = cancelAccrual.request().amount();
 
 
         PointAccrual accrual = accrualRepository.findById(pointKey)
-                .orElseThrow(() -> new IllegalArgumentException("적립 내역이 존재하지 않습니다."));
+                .orElseThrow(() -> new DomainException(ApiErrorCode.ACCRUAL_NOT_FOUND));
 
-        if (!accrual.getUserId().equals(accrual.getUserId())) {
-            throw new IllegalArgumentException("본인 적립만 취소할 수 있습니다.");
+        if (!userId.equals(accrual.getUserId())) {
+            throw new DomainException(ApiErrorCode.ACCRUAL_NOT_OWNED);
         }
 
+        /*
         // 취소 금액이 적립 금액보다 큰 경우 예외 처리
         if (accrual.isExceedAmount(cancelAmount)) {
-            throw new IllegalArgumentException("적립 금액보다 큰 금액은 취소할 수 없습니다.");
-        }
+            throw new DomainException(ApiErrorCode.CANCEL_AMOUNT_EXCEEDS);
+        }*/
 
         if (!accrual.isActive()) {
-            throw new IllegalArgumentException("적립 취소가 불가능한 건입니다.");
+            throw new DomainException(ApiErrorCode.ACCRUAL_INACTIVE);
         }
 
         accrual.cancel();
 
         PointWallet wallet = walletRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("지갑이 존재하지 않습니다."));
+                .orElseThrow(() -> new DomainException(ApiErrorCode.WALLET_NOT_FOUND));
 
 
         wallet.decrease(accrual.getAmount());
@@ -91,8 +96,10 @@ public class AccrualUseCase {
         long maxAmount = policyService.maxAccrualPerTxn();
 
         if (amount < minAmount || amount > maxAmount)
-            throw new InvalidAccrualAmountException(amount, minAmount, maxAmount);
-            //throw new IllegalArgumentException("1회 적립 한도 위반[적립 가능 금액="+minAmount+"~"+maxAmount+"]");
+            throw DomainException.withFormat(
+                    ApiErrorCode.INVALID_ACCRUAL_AMOUNT,
+                    "(금액: %,d/ 한도: %,d~%,d)", amount, minAmount, maxAmount
+            );
     }
 
     private int resolveExpiryDays(int expiryDays) {
@@ -100,16 +107,21 @@ public class AccrualUseCase {
     }
 
     private void validateExpiryDays(int expiryDays) {
-        int maxExpiryDays = resolveExpiryDays(expiryDays);
+        int maxExpiryDays = policyService.maxExpiryDays();
         if (expiryDays > maxExpiryDays)
-            throw new ExpiryPolicyViolationException(expiryDays, 1, maxExpiryDays);
-            //throw new IllegalArgumentException("만료일 범위 위반[유효시간 최대 일=" + maxExpiryDays + "]");
+            throw DomainException.withFormat(
+                    ApiErrorCode.EXPIRY_POLICY_VIOLATION,
+                    "(요청 만기일: %,d/ 최대 만기일: %,d)", expiryDays, maxExpiryDays
+            );
     }
 
     private void validateWalletBalance(String userId, long currentBalance, long accrual) {
         long maxWalletBalance = policyService.maxWalletBalanceFor(userId);
         if (currentBalance + accrual > maxWalletBalance)
-            throw new IllegalArgumentException("보유 한도 초과[최대 가능 금액="+maxWalletBalance+"]");
+            throw DomainException.withFormat(
+                    ApiErrorCode.MAX_HOLDING_EXCEEDED,
+                    "(요청금액: %,d/ 현재잔액: %,d / 한도잔액: %,d)", accrual, currentBalance, maxWalletBalance
+            );
     }
 
 }

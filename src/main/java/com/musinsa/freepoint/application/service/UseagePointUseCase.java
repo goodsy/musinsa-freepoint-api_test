@@ -1,8 +1,10 @@
 
 package com.musinsa.freepoint.application.service;
 
+import com.musinsa.freepoint.adapters.in.web.exception.ApiErrorCode;
 import com.musinsa.freepoint.adapters.out.persistence.*;
 import com.musinsa.freepoint.application.port.in.UsageCommandPort.*;
+import com.musinsa.freepoint.domain.DomainException;
 import com.musinsa.freepoint.domain.accrual.PointAccrual;
 import com.musinsa.freepoint.domain.usage.UsageStatus;
 import com.musinsa.freepoint.domain.usage.PointUsage;
@@ -61,6 +63,7 @@ public class UseagePointUseCase {
             if (remain <= 0) break;
 
             long useAmount = Math.min(remain, accrual.getRemainAmount());
+
             if (useAmount > 0) {
                 accrual.use(useAmount);
                 usage.addDetail(accrual.getPointKey(), useAmount);
@@ -68,7 +71,7 @@ public class UseagePointUseCase {
             }
         }
 
-        if (remain > 0) throw new IllegalArgumentException("포인트 잔액 부족");
+        if (remain > 0) throw new DomainException(ApiErrorCode.POINT_BALANCE_INSUFFICIENT);
 
         usageRepository.save(usage);
 
@@ -84,13 +87,13 @@ public class UseagePointUseCase {
      */
     @Transactional
     public PointUsage cancel(CancelUsagePoint cancelAccrual) {
-        long usageId = cancelAccrual.request().usageId();
-        long cancelAmount = cancelAccrual.request().canceledAmount();
+        String usageKey = cancelAccrual.request().usageKey();
+        long cancelAmount = cancelAccrual.request().amount();
 
-        PointUsage usage = usageRepository.findById(usageId)
-                .orElseThrow(() -> new IllegalArgumentException("원본 사용 내역 없음"));
+        PointUsage usage = usageRepository.findById(usageKey)
+                .orElseThrow(() -> new DomainException(ApiErrorCode.POINT_USAGE_HISTORY_NOT_FOUND));
 
-        List<PointUsageDetail> details = usageDetailRepository.findByUsageId(usageId);
+        List<PointUsageDetail> details = usageDetailRepository.findByUsageKey(usageKey);
 
         long remain = cancelAmount;
 
@@ -100,7 +103,7 @@ public class UseagePointUseCase {
                 cancelAmount,
                 UsageStatus.CANCELED.name()
         );
-        cancelUsage.setReversalOfId(usageId);
+        cancelUsage.setReversalOfId(usageKey);
 
         for (PointUsageDetail detail : details) {
 
@@ -114,20 +117,20 @@ public class UseagePointUseCase {
 
             if (toCancel > 0) {
                 PointAccrual accrual = accrualRepository.findById(detail.getPointKey())
-                        .orElseThrow(() -> new IllegalArgumentException("적립금 없음"));
+                        .orElseThrow(() -> new DomainException(ApiErrorCode.ACCRUAL_NOT_FOUND));
 
                 if (accrual.isExpired()) {
                     // 만료: 신규 적립 처리
-                    PointAccrual newAccrual = PointAccrual.createReversal(accrual.getUserId(), toCancel, String.valueOf(usageId), pointPolicyService.defaultExpiryDays());
+                    PointAccrual newAccrual = PointAccrual.createReversal(accrual.getUserId(), toCancel, usageKey, pointPolicyService.defaultExpiryDays());
                     accrualRepository.save(newAccrual);
 
-                    PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getId(), newAccrual.getPointKey(), toCancel, true);
+                    PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getUsageKey(), newAccrual.getPointKey(), toCancel, true);
                     usageDetailRepository.save(cancelDetail);
                 } else {
                     // 만료 전: 잔액 복구
                     accrual.restore(toCancel);
 
-                    PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getId(), detail.getPointKey(), toCancel, false);
+                    PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getUsageKey(), detail.getPointKey(), toCancel, false);
                     usageDetailRepository.save(cancelDetail);
                 }
 
@@ -139,7 +142,7 @@ public class UseagePointUseCase {
             }
         }
 
-        if (remain > 0) throw new IllegalArgumentException("취소 금액이 원본 사용 내역을 초과");
+        if (remain > 0) throw new DomainException(ApiErrorCode.CANCEL_AMOUNT_EXCEEDS_ORIGINAL_USAGE);
 
         usageRepository.save(cancelUsage);
         return cancelUsage;

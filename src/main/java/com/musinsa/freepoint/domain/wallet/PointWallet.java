@@ -1,13 +1,10 @@
 
 package com.musinsa.freepoint.domain.wallet;
 
-import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
-import com.musinsa.freepoint.domain.accrual.PointAccrual;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity

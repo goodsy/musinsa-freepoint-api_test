@@ -24,8 +24,8 @@ public class AccrualController {
     }
 
     @PostMapping
-    @IdempotencyKey
-    public ResponseEntity<ApiSuccessResponse<AccrualResponse>> accrue(@Valid @RequestBody AccrualRequest request) {
+    @IdempotencyKey //@RequestAttribute("MUSINSA_ID") String musinsaId,
+    public ResponseEntity<ApiResponse<AccrualResponse>> accrue(@Valid @RequestBody AccrualRequest request) {
 
         PointAccrual accrual = useCase.accrue(new CreateAccrual(request));
 
@@ -36,26 +36,22 @@ public class AccrualController {
                 accrual.getExpireAt()
         );
 
-        return ResponseEntity.ok(ApiSuccessResponse.of(response));
+        return ResponseEntity.ok(ApiResponse.ok(response));
 
-        /*return new AccrualResponse(
-                accrual.getPointKey(),
-                accrual.getUserId(),
-                accrual.getAmount(),
-                accrual.getExpireAt()
-        );*/
     }
 
 
-    @PostMapping("/cancel/{pointKey}")
+    @PostMapping("/cancel")
     @IdempotencyKey
-    public CancelAccrualResponse cancelAccrual(@RequestBody CancelAccrualRequest request) {
+    public ResponseEntity<ApiResponse<CancelAccrualResponse>> cancelAccrual(@Valid @RequestBody CancelAccrualRequest request) {
         PointAccrual accrual = useCase.cancelAccrual(new CancelAccrual(request));
 
-        return new CancelAccrualResponse(
+        CancelAccrualResponse response = new CancelAccrualResponse(
                 accrual.getPointKey(),
                 accrual.getUserId(),
                 accrual.getAmount()
         );
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

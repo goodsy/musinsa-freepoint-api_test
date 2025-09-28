@@ -1,7 +1,6 @@
 package com.musinsa.freepoint.common.idempotency;
 
 import com.musinsa.freepoint.adapters.in.web.ApiHeaderConstants;
-import com.musinsa.freepoint.application.service.IdempotencyService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;

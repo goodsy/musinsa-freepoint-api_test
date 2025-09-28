@@ -6,10 +6,7 @@ import java.util.List;
 
 /**
  * <p><b>ApiHeaderConstants</b></p>
- *
- * <p>API 요청 및 응답에서 공통적으로 사용되는 HTTP 헤더 상수를 정의하는 클래스.</p>
-
- * @version 1.0
+ * <p>API 요청 및 응답에서 공통적으로 사용되는 HTTP 헤더 상수를 정의하는 클래스.</p>d
  */
 public final class ApiHeaderConstants {
 

@@ -46,31 +46,5 @@ public class ApiLog {
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-/*
-    public ApiLog(String apiMethod, String apiUri, String requestBody, String requestHeaders) {
-        generateLogId();
 
-        this.apiMethod = apiMethod;
-        this.apiUri = apiUri;
-        this.requestBody = requestBody;
-        this.requestHeaders = requestHeaders;
-    }
-*/
-
-
-    public static String generateLogId() {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 15);
-        return timestamp + uuid;
-    }
-
-
-    public static ApiLog of(String key) {
-        ApiLog log = new ApiLog();
-
-        log.generateLogId();
-        log.idempotencyKey = key;
-
-        return log;
-    }
 }

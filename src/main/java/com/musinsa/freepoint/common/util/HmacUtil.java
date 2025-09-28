@@ -14,6 +14,7 @@ public class HmacUtil {
     }
 
     public static boolean validateHmac(String data, String secretKey, String receviedHmac) throws Exception {
+        System.out.println("generateHmac(data, secretKey) : "+generateHmac(data, secretKey));
         return generateHmac(data, secretKey).equals(receviedHmac);
     }
 }

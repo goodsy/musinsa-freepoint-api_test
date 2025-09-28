@@ -14,8 +14,10 @@ public class PointPolicyRule {
     @EmbeddedId
     private PointPolicyRuleId id;
 
+    @Column(nullable = false)
     private String policyValue;
 
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -24,10 +26,4 @@ public class PointPolicyRule {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public static PointPolicyRule of(String scope, String subjectKey, String policyKey, String policyValue) {
-        PointPolicyRule rule = new PointPolicyRule();
-        rule.id = new PointPolicyRuleId(scope, subjectKey, policyKey);
-        rule.policyValue = policyValue;
-        return rule;
-    }
 }

@@ -11,11 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @ConfigurationProperties(prefix = "point.policy")
 public class PointPolicyConfig {
-    private long minAccrualPerTxn = 1;
-    private long maxAccrualPerTxn = 100_000L;
-    private long maxWalletBalance = 10_000_000L;
+    private long minAccrualPerTxn;
+    private long maxAccrualPerTxn;
+    private long maxWalletBalance;
 
-    private int defaultExpiryDays = 365;
-    private int minExpiryDays = 1;
+    private int defaultExpiryDays;
+    private int maxExpiryDays;
 
 }

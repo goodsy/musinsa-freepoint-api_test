@@ -6,6 +6,7 @@ import com.musinsa.freepoint.domain.policy.PointPolicyRuleId;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PointPolicyRuleRepository extends JpaRepository<PointPolicyRule, PointPolicyRuleId> {
@@ -27,4 +28,23 @@ public interface PointPolicyRuleRepository extends JpaRepository<PointPolicyRule
     """, nativeQuery = true)
     Optional<String> findBestValue(@Param("policyKey") String policyKey,
                                    @Param("scopeId") String scopeId);
+
+
+    @Query(value = """
+        SELECT policy_key, policy_value
+          FROM (
+                SELECT p.policy_key,
+                       p.policy_value,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY p.policy_key
+                           ORDER BY CASE p.scope WHEN 'USER' THEN 1 ELSE 2 END
+                       ) as rn
+                  FROM point_policy_rule p
+                 WHERE (p.scope = 'USER'   AND p.scope_id = :scopeId)
+                    OR (p.scope = 'GLOBAL' AND p.scope_id = 'ALL')
+               ) t
+         WHERE t.rn = 1
+        """, nativeQuery = true)
+    List<Object[]> findAllByScopeId(@Param("scopeId") String scopeId);
+
 }

@@ -15,12 +15,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +31,11 @@ import java.util.Map;
 public class ApiLogFilter extends OncePerRequestFilter {
 
     private final IdempotencyService idempotencyService;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public ApiLogFilter(IdempotencyService idempotencyService) {
+    public ApiLogFilter(IdempotencyService idempotencyService, HandlerExceptionResolver handlerExceptionResolver) {
         this.idempotencyService = idempotencyService;
+        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class ApiLogFilter extends OncePerRequestFilter {
         ContentCachingResponseWrapper resW = new ContentCachingResponseWrapper(response);
 
         String idemKey = reqW.getHeader(ApiHeaderConstants.IDEMPOTENCY_KEY);
-        String headers = headersString(reqW);
+        String headers = getHeaders(reqW);
         String reqBody = getRequestBody(reqW);
 
         // acquireOrCached: 있으면 캐시 응답, 없으면 최초 insert
@@ -65,15 +67,20 @@ public class ApiLogFilter extends OncePerRequestFilter {
 
         if (cached.isPresent()) {
             var cr = cached.get();
+
             resW.setStatus(cr.statusCode());
             resW.setContentType("application/json");
+            resW.setStatus(409); // 409 Conflict or 200 OK
             if (cr.body() != null) resW.getWriter().write(cr.body());
             resW.copyBodyToResponse();
+
             return;
         }
 
         try {
             chain.doFilter(reqW, resW);
+        } catch (Exception ex) {
+            handlerExceptionResolver.resolveException(request, response, null, ex);
         } finally {
             String respBody = new String(resW.getContentAsByteArray(), StandardCharsets.UTF_8);
 
@@ -86,7 +93,7 @@ public class ApiLogFilter extends OncePerRequestFilter {
         }
     }
 
-    private static String headersString(HttpServletRequest request) {
+    private static String getHeaders(HttpServletRequest request) {
         List<String> targetHeaders = List.of(ApiHeaderConstants.HEADER_MUSINSA_ID, ApiHeaderConstants.IDEMPOTENCY_KEY, ApiHeaderConstants.DEFAULT_CONTENT_TYPE_VALUE);
         StringBuilder headers = new StringBuilder();
         Map<String, String> headersMap = new HashMap<>();
@@ -98,22 +105,6 @@ public class ApiLogFilter extends OncePerRequestFilter {
                 headers.append(name).append(": ").append(value).append(",");
             }
         }
-        try {
-            return new ObjectMapper().writeValueAsString(headersMap);
-        } catch (JsonProcessingException e) {
-            return "{}"; // JSON 변환 오류 시 빈 JSON 반환
-        }
-        //return headers.toString();
-    }
-
-    private static String getHeaders(HttpServletRequest request) {
-        Map<String, String> headersMap = new HashMap<>();
-        request.getHeaderNames().asIterator().forEachRemaining(header -> {
-            if ("Request-ID".contains(header)) {
-                headersMap.put(header, request.getHeader(header));
-            }
-        });
-
         try {
             return new ObjectMapper().writeValueAsString(headersMap);
         } catch (JsonProcessingException e) {

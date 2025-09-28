@@ -1,7 +1,7 @@
 package com.musinsa.freepoint.adapters.in.web.dto;
 
 public record CancelUseResponse(
-        Long usageId,
+        String usageKey,
         String orderNo,
-        long usedAmount
+        long amount
 ) {}

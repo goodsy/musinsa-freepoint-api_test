@@ -1,5 +1,6 @@
 package com.musinsa.freepoint.domain.policy;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
@@ -12,7 +13,12 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class PointPolicyRuleId  implements Serializable {
-    private String scope;       // 'USER' | 'TIER' | 'GLOBAL'
-    private String scopeId;  // userId | tierCode | '*'
-    private String policyKey;   // 'wallet.maxBalance' 등
+    @Column(name = "scope", length = 10, nullable = false, updatable = false)
+    private String scope;
+
+    @Column(name = "scope_id", length = 64, nullable = false, updatable = false)
+    private String scopeId;
+
+    @Column(name = "policy_key", length = 50, nullable = false, updatable = false)
+    private String policyKey;
 }

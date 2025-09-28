@@ -1,6 +1,5 @@
 package com.musinsa.freepoint.domain.accural;
 import com.musinsa.freepoint.adapters.in.web.dto.AccrualRequest;
-import com.musinsa.freepoint.application.port.in.AccrualCommandPort;
 
 public final class AccrualRequestFactory {
 

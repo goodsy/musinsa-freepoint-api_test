@@ -7,6 +7,6 @@ public record AccrualRequest(
         @Min(1) long amount,
         @Min(1) int expiryDays,
         Boolean manual,
-        String sourceType,
+        @NotBlank String sourceType,
         String sourceId
 ) {}

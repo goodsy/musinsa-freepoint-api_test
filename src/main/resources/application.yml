@@ -10,12 +10,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        jdbc.time_zone: UTC
+        jdbc.time_zone: Asia/Seoul
+    show-sql: true
+
   h2:
     console:
       enabled: true
-  #flyway:
-  #  enabled: true
+  sql:
+    init:
+      mode: always
 
 point:
   policy:
@@ -28,16 +31,27 @@ point:
 
 server:
   port: 8080
+  servlet:
+    encoding:
+      enabled: true
+      force: true
+      charset: UTF-8
 
 logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
+    org.hibernate.orm.jdbc.bind: trace          # 바인딩 파라미터(? 값)
+    org.hibernate.type.descriptor.sql: trace    # (일부 타입 바인딩 상세)
+    #org.hibernate.tool.schema: debug            # DDL 생성 로그(테이블 만드는 로그)
+    org.hibernate.SQL: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: logs/app.log
+    encoding: UTF-8
 
-test:
-  api-key: "8vYgD+ibnpjKOL770UzCPnI+cX2bQUStvon+ewt00Hw="
-  itempotency-key: "8vYgD+ibnpjKOL770UzCPnI+cX2bQUStvon+ewt00Hw="
+api:
+  test:
+    api-key: "8vYgD+ibnpjKOL770UzCPnI+cX2bQUStvon+ewt00Hw="
+    musinsa-id: "musinsaUserId"
