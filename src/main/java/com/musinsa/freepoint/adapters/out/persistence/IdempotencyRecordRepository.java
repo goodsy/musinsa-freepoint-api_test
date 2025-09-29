@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface ApiLogJpaRepository extends JpaRepository<ApiLog, String> {
-    Optional<ApiLog> findByIdempotencyKey(String idempotencyKey);
+public interface IdempotencyRecordRepository extends JpaRepository<ApiLog, String> {
+    Optional<ApiLog> findByIdempotencyKey(String key);
 }

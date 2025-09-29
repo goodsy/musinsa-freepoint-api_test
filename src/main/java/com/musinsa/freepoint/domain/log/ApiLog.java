@@ -43,7 +43,7 @@ public class ApiLog {
     private String statusCode;
 
     @Column(name="created_at", insertable = false, updatable = false,
-            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            columnDefinition = "TIMESTAMP DEFAULT TIMESTAMP")
     private LocalDateTime createdAt;
 
 

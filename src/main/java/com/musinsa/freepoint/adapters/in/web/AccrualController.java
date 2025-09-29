@@ -23,8 +23,8 @@ public class AccrualController {
         this.useCase = useCase;
     }
 
-    @PostMapping
-    @IdempotencyKey //@RequestAttribute("MUSINSA_ID") String musinsaId,
+    @PostMapping(consumes = "application/json", produces = "application/json")
+    @IdempotencyKey
     public ResponseEntity<ApiResponse<AccrualResponse>> accrue(@Valid @RequestBody AccrualRequest request) {
 
         PointAccrual accrual = useCase.accrue(new CreateAccrual(request));

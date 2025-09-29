@@ -23,14 +23,32 @@ public class PointUsage {
     @Id
     @Column(name="usage_key", length = 50)
     private String usageKey;
+
+    @Column(name = "user_id")
     private String userId;
+
+    @Column(name = "order_no")
     private String orderNo;
+
+    @Column(name = "amount")
     private long amount;
+
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "idempotency_key")
     private String idempotencyKey;
+
+    @Column(name = "used_at")
     private LocalDateTime usedAt;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "reversal_of_id")
     private String reversalOfId;
 
     @OneToMany(mappedBy = "usageKey", cascade = CascadeType.ALL, orphanRemoval = true)

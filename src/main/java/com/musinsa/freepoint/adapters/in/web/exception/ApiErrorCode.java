@@ -41,9 +41,9 @@ public enum ApiErrorCode {
     DUPLICATE_REQUEST          ("FP-COMMON-409", HttpStatus.CONFLICT, "중복 요청입니다."),
 
     /* ===== 인증/인가 ===== */
-    HEADER_MISSING_AUTH("FP-HEADER-401", HttpStatus.UNAUTHORIZED, "Authorization 헤더가 유효하지 않습니다."),
-    HEADER_MISSING_MUSINSA_ID("FP-HEADER-402", HttpStatus.BAD_REQUEST, "X-MUSINSA-ID 헤더가 유효하지 않습니다."),
-    HEADER_MISSING_IDEMPOTENCY_KEY("FP-HEADER-403", HttpStatus.BAD_REQUEST, "Idempotency-Key 헤더가 유효하지 않습니다."),
+    HEADER_MISSING_AUTH("FP-HEADER-401", HttpStatus.UNAUTHORIZED, "Authorization 헤더 누락 또는 유효하지 않는 값입니다."),
+    HEADER_MISSING_MUSINSA_ID("FP-HEADER-402", HttpStatus.BAD_REQUEST, "X-MUSINSA-ID 헤더 누락 또는 유효하지 않는 값입니다."),
+    HEADER_MISSING_IDEMPOTENCY_KEY("FP-HEADER-403", HttpStatus.BAD_REQUEST, "Idempotency-Key 헤더 누락 또는 유효하지 않는 값입니다."),
 
     AUTH_UNAUTHORIZED          ("FP-AUTH-401", HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     AUTH_FORBIDDEN             ("FP-AUTH-402", HttpStatus.FORBIDDEN, "요청 권한이 없습니다."),
@@ -67,7 +67,7 @@ public enum ApiErrorCode {
     POINT_BALANCE_INSUFFICIENT ("FP-USAGE-004", HttpStatus.CONFLICT, "포인트 잔액 부족합니다."),
     POINT_USAGE_HISTORY_NOT_FOUND ("FP-USAGE-005", HttpStatus.CONFLICT, "포인트 사용 내역이 존재하지 않습니다."),
     CANCEL_AMOUNT_EXCEEDS_ORIGINAL_USAGE ("FP-USAGE-006", HttpStatus.CONFLICT, "취소 금액이 원본 사용 금액을 초과합니다."),
-
+    DUPLICATE_USAGE_HISTORY  ("FP-USAGE-007", HttpStatus.CONFLICT, "중복된 사용 내역이 존재합니다."),
     /* ===== 지갑/사용자 ===== */
     WALLET_NOT_FOUND           ("FP-WALLET-001", HttpStatus.NOT_FOUND, "사용자 지갑이 존재하지 않습니다."),
     USER_NOT_FOUND             ("FP-USER-001",   HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),

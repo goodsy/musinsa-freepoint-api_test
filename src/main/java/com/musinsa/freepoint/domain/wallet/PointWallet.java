@@ -15,8 +15,20 @@ public class PointWallet {
     @Id
     @Column(name = "user_id", length = 64)
     private String userId;
+
+    @Column(name = "total_balance")
     private long totalBalance;
+
+    @Column(name = "manual_balance")
     private long manualBalance;
+
+    @Column(name = "total_used")
+    private long totalUsed;
+
+    @Column(name = "total_canceled")
+    private long totalCanceled; // [추가]
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public static PointWallet create(String userId) {
@@ -40,4 +52,23 @@ public class PointWallet {
         this.manualBalance -= dec;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void use(long amount, long usedFromManual) {
+        this.totalBalance -= amount;
+        this.totalUsed += amount;
+        if (usedFromManual > 0) {
+            this.manualBalance -= usedFromManual;
+        }
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void restore(long amount, long restoreToManual) {
+        this.totalBalance += amount;
+        this.totalCanceled += amount;
+        if (restoreToManual > 0) {
+            this.manualBalance += restoreToManual;
+        }
+        this.updatedAt = LocalDateTime.now();
+    }
+
 }

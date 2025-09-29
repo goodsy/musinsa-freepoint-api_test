@@ -1,0 +1,244 @@
+{
+	"info": {
+		"_postman_id": "5218fc60-624d-49a0-b3f5-02780c1e34b6",
+		"name": "무신사 무료 포인트 시스템 API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8307931"
+	},
+	"item": [
+		{
+			"name": "포인트 적립",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "vvnG6O/nE/Aj3UX/TofEN5R+1SS8HmX+UBUdxU8u6lk=",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-MUSINSA-ID",
+						"value": "musinsaUserId",
+						"description": "무시산 무료포인트 시스템 사용ID",
+						"type": "text"
+					},
+					{
+						"key": "Idempotency-Key",
+						"value": "idempKey0004",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"testUserId2\",\r\n  \"amount\": 3000,\r\n  \"expiryDays\": 100,\r\n  \"manual\": true,\r\n  \"sourceType\": \"ORDER\",\r\n  \"sourceId\": \"ORDER_TEST1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/points/accruals",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"points",
+						"accruals"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "포인트 사용",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "NrLWxOJxqtYZICwtKdHdNUTzwT1VaHRzGWSwssPrNSw=",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-MUSINSA-ID",
+						"value": "musinsaUserId",
+						"description": "무시산 무료포인트 시스템 사용ID",
+						"type": "text"
+					},
+					{
+						"key": "Idempotency-Key",
+						"value": "idempKey2007",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"testUserId\",\r\n  \"orderNo\" : \"ORDER_TEST_01\",\r\n  \"amount\": 8500\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/points/usages",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"points",
+						"usages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "포인트 사용 취소",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "Dhtraia/D3rOwmLuAAMusu22oORcugp1WsdKJ51/44o=",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-MUSINSA-ID",
+						"value": "musinsaUserId",
+						"description": "무시산 무료포인트 시스템 사용ID",
+						"type": "text"
+					},
+					{
+						"key": "Idempotency-Key",
+						"value": "idempKey4001",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"usageKey\": \"testUserId\",\r\n  \"amount\": 8500\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/points/usages/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"points",
+						"usages",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "포인트 적립 취소",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "gRb7OtyJlO0vVC0yxEcq6tIPKSYcPypIylpPCOdsKmI=",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-MUSINSA-ID",
+						"value": "musinsaUserId",
+						"description": "무시산 무료포인트 시스템 사용ID",
+						"type": "text"
+					},
+					{
+						"key": "Idempotency-Key",
+						"value": "idempKey1005",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"testUserId2\",\r\n  \"pointKey\": \"P20250929_767af0d6eb\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/points/accruals/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"points",
+						"accruals",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

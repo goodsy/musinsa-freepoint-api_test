@@ -103,8 +103,10 @@ public class PointAccrual {
     }
 
     public boolean isExpired() {
-        return expireAt != null && LocalDateTime.now().isAfter(expireAt);
+        return (expireAt != null && LocalDateTime.now().isAfter(expireAt))
+                || AccrualStatus.EXPIRED.name().equals(this.status);
     }
+
 
     public void cancel() {
         if (this.remainAmount != this.amount) {

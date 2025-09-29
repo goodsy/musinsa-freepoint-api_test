@@ -31,9 +31,13 @@ public class UsageController {
     }
 
     @PostMapping("/cancel")
-    public CancelUseResponse cancel(@Valid @RequestBody CancelUseRequest request) {
+    public ResponseEntity<ApiResponse<CancelUseResponse>> cancel(@Valid @RequestBody CancelUseRequest request) {
         PointUsage usage = useCase.cancel(new CancelUsagePoint(request));
-        return new CancelUseResponse(usage.getUsageKey(), usage.getOrderNo(), usage.getAmount());
+        CancelUseResponse response = new CancelUseResponse(
+                usage.getUserId(), usage.getOrderNo(), usage.getAmount()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
 
     }
 }

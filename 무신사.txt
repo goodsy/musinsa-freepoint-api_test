@@ -1,0 +1,100 @@
+echo "# musinsa-freepoint-api_test" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/goodsy/musinsa-freepoint-api_test.git
+git push -u origin main
+
+
+git remote add origin https://github.com/goodsy/musinsa-freepoint-api_test.git
+git branch -M main
+git push -u origin main
+
+
+git remote -v
+
+
+1. 사용취소 기능 테스트
+ - 사용 또는 취소시에 만료된 건에 대해서는 대상이 되지 않도록 조회조건 
+2. Header 필수값과 검증
+3. 스웨거 인증 추가
+4. 멱등키 get제외
+5. 
+
+
+[필요한기능]
+point_accrual  
+만료일자는 날짜 yyyymmdd
+만료일자에 도달하면 상태 update 하는 배치
+사용금액 컬럼 추가? 및 반ㅇ여
+
+그리고 어플리케이션 구동할때 api_log
+
+[멱등키]
+도메인 오류가 아닌 건 (url 오입력, 메서드 미일치 등등으로 인한 멱등키 조회시 여러건 조회됨)
+
+
+----
+
+비즈니스 로직별 적용 포인트
+적립:
+point_accrual에 적립 내역 추가
+point_wallet.total_balance, manual_balance(수기 적립 시) 증가
+사용:
+point_usage에 사용 내역 추가
+point_usage_detail에 상세 배분 내역 추가
+point_wallet.total_balance, manual_balance(우선 차감), total_used 감소/증가
+사용 취소:
+point_usage에 취소 내역 추가(status = CANCEL, reversal_of_id로 원본 참조)
+point_usage_detail에 취소 상세 추가
+point_wallet.total_balance, manual_balance, total_canceled 증가
+잔액 조회:
+point_wallet.total_balance 실시간 조회
+정합성:
+모든 트랜잭션은 point_wallet과 원장(point_accrual, point_usage, point_usage_detail)을 함께 갱신
+
+
+요약:
+집계 테이블(point_wallet)은 실시간 잔액/집계용
+원장 테이블(point_accrual, point_usage, point_usage_detail)은 상세 이력 추적용
+컬럼명, 타입 일관성, 외래키 제약조건 보강
+각 비즈니스 로직에서 집계와 원장 동시 갱신 필수
+
+
+---
+
+엔티티 클래스 존재 여부
+api_log 테이블에 매핑되는 @Entity 클래스가 실제로 존재하는지 확인하세요.
+클래스에 @Table(name = "api_log")가 정확히 지정되어 있는지 확인하세요.
+엔티티 스캔 경로
+@SpringBootApplication 또는 @EntityScan의 패키지 경로에 해당 엔티티가 포함되어 있는지 확인하세요.
+JPA 설정
+application.yml 또는 application.properties에서
+spring.jpa.hibernate.ddl-auto가 update, create, create-drop 등으로 설정되어 있는지 확인하세요.
+DB에 이미 테이블 존재 여부
+DB에 이미 api_log 테이블이 존재하면 Hibernate가 생성 쿼리를 실행하지 않습니다.
+SQL 스크립트 실행 위치
+schema.sql이 정상적으로 실행되고 있는지, 혹은 JPA가 아닌 SQL 스크립트로 테이블을 생성하려는 경우
+spring.datasource.initialization-mode 또는 spring.sql.init.mode가 always로 되어 있는지 확인하세요.
+로그 확인
+애플리케이션 실행 시 콘솔 로그에 테이블 생성 관련 에러가 있는지 확인하세요.
+컬럼 타입 호환성
+일부 DB(H2, MySQL 등)에서 CLOB 타입 지원이 다를 수 있으니, DB에 맞는 타입인지 확인하세요.
+
+
+---
+
+update point_accrual  set status = 'EXPIRED', expires_at = DATEADD('DAY', -1, CURRENT_TIMESTAMP)
+where 1=1
+and point_key='P20250929_5b4fe55e80'
+;
+
+
+
+----
+
+만료하는 테스트 api
+포스트맨 import
+erd
+db 코멘트

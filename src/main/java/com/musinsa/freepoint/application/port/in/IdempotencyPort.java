@@ -4,9 +4,8 @@ import java.util.Optional;
 
 public interface IdempotencyPort {
 
-    Optional<CachedResponse> acquireOrCached(String idemKey, String method, String uri,
-                                             String headers, String requestBody);
-    void complete(String idemKey, int status, String responseBody);
-    record CachedResponse(int statusCode, String body) {}
+    Optional<CachedResponse> preCheck(String idemKey);
+    void saveOrUpdate(String idemKey, int status, String responseBody);
+    record CachedResponse(int statusCode, String headers, String body) {}
 
 }

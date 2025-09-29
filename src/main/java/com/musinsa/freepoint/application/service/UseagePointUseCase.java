@@ -9,12 +9,15 @@ import com.musinsa.freepoint.domain.accrual.PointAccrual;
 import com.musinsa.freepoint.domain.usage.UsageStatus;
 import com.musinsa.freepoint.domain.usage.PointUsage;
 import com.musinsa.freepoint.domain.usage.PointUsageDetail;
+import com.musinsa.freepoint.domain.wallet.PointWallet;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
 
+@Log4j2
 @Service
 public class UseagePointUseCase {
     private final PointAccrualRepository accrualRepository;
@@ -55,10 +58,15 @@ public class UseagePointUseCase {
                 .thenComparing(PointAccrual::getExpireAt)
                 .thenComparing(PointAccrual::getPointKey));
 
+        if (accruals.isEmpty()) {
+            throw new DomainException(ApiErrorCode.ACCRUAL_NOT_FOUND);
+        }
 
         PointUsage usage = PointUsage.create(userId, orderNo, amount, UsageStatus.USED.name());
 
         long remain = amount;
+        long usedFromManual = 0;
+
         for (PointAccrual accrual : accruals) {
             if (remain <= 0) break;
 
@@ -67,6 +75,9 @@ public class UseagePointUseCase {
             if (useAmount > 0) {
                 accrual.use(useAmount);
                 usage.addDetail(accrual.getPointKey(), useAmount);
+                if (accrual.isManual()) {
+                    usedFromManual += useAmount;
+                }
                 remain -= useAmount;
             }
         }
@@ -74,6 +85,12 @@ public class UseagePointUseCase {
         if (remain > 0) throw new DomainException(ApiErrorCode.POINT_BALANCE_INSUFFICIENT);
 
         usageRepository.save(usage);
+
+        PointWallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new DomainException(ApiErrorCode.WALLET_NOT_FOUND));
+        wallet.use(amount, usedFromManual);
+        walletRepository.save(wallet);
+        walletRepository.save(wallet);
 
         return usage;
 
@@ -87,64 +104,78 @@ public class UseagePointUseCase {
      */
     @Transactional
     public PointUsage cancel(CancelUsagePoint cancelAccrual) {
-        String usageKey = cancelAccrual.request().usageKey();
+        String userId = cancelAccrual.request().userId();
+        String orderNo = cancelAccrual.request().orderNo();
         long cancelAmount = cancelAccrual.request().amount();
 
-        PointUsage usage = usageRepository.findById(usageKey)
-                .orElseThrow(() -> new DomainException(ApiErrorCode.POINT_USAGE_HISTORY_NOT_FOUND));
+        // userId, orderNo로 사용내역 조회
+        List<PointUsage> usages = usageRepository.findByUserIdAndOrderNo(userId, orderNo);
+        if (usages.isEmpty()) {
+            throw new DomainException(ApiErrorCode.POINT_USAGE_HISTORY_NOT_FOUND);
+        }
 
-        List<PointUsageDetail> details = usageDetailRepository.findByUsageKey(usageKey);
-
-        long remain = cancelAmount;
-
+        // 취소 내역 생성
         PointUsage cancelUsage = PointUsage.create(
-                usage.getUserId(),
-                usage.getOrderNo(),
+                userId,
+                orderNo,
                 cancelAmount,
                 UsageStatus.CANCELED.name()
         );
-        cancelUsage.setReversalOfId(usageKey);
 
-        for (PointUsageDetail detail : details) {
+        long remain = cancelAmount;
+        long restoreToManual = 0;
 
+        // 여러 사용내역을 순회하며 취소 처리
+        for (PointUsage usage : usages) {
             if (remain <= 0) break;
 
-            long useAmount = detail.getAmount();
-            long canceledAmount = detail.getCanceledAmount(); // 이미 취소된 금액
+            List<PointUsageDetail> details = usageDetailRepository.findByUsageKey(usage.getUsageKey());
+            for (PointUsageDetail detail : details) {
+                if (remain <= 0) break;
 
-            long canCancel = useAmount - canceledAmount;
-            long toCancel = Math.min(remain, canCancel);
+                long useAmount = detail.getAmount();
+                long canceledAmount = detail.getCanceledAmount();
+                long canCancel = useAmount - canceledAmount;
+                long toCancel = Math.min(remain, canCancel);
 
-            if (toCancel > 0) {
-                PointAccrual accrual = accrualRepository.findById(detail.getPointKey())
-                        .orElseThrow(() -> new DomainException(ApiErrorCode.ACCRUAL_NOT_FOUND));
+                if (toCancel > 0) {
+                    PointAccrual accrual = accrualRepository.findById(detail.getPointKey())
+                            .orElseThrow(() -> new DomainException(ApiErrorCode.ACCRUAL_NOT_FOUND));
+                    log.info("Cancelling {} from Accrual {} isExpired {} ", toCancel, accrual.getPointKey(), accrual.isExpired());
+                    if (accrual.isExpired()) {
+                        PointAccrual newAccrual = PointAccrual.createReversal(accrual.getUserId(), toCancel, usage.getUsageKey(), pointPolicyService.defaultExpiryDays());
+                        accrualRepository.save(newAccrual);
 
-                if (accrual.isExpired()) {
-                    // 만료: 신규 적립 처리
-                    PointAccrual newAccrual = PointAccrual.createReversal(accrual.getUserId(), toCancel, usageKey, pointPolicyService.defaultExpiryDays());
-                    accrualRepository.save(newAccrual);
+                        PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getUsageKey(), newAccrual.getPointKey(), toCancel, true);
+                        usageDetailRepository.save(cancelDetail);
+                    } else {
+                        accrual.restore(toCancel);
 
-                    PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getUsageKey(), newAccrual.getPointKey(), toCancel, true);
-                    usageDetailRepository.save(cancelDetail);
-                } else {
-                    // 만료 전: 잔액 복구
-                    accrual.restore(toCancel);
+                        PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getUsageKey(), detail.getPointKey(), toCancel, false);
+                        usageDetailRepository.save(cancelDetail);
+                    }
 
-                    PointUsageDetail cancelDetail = PointUsageDetail.create(cancelUsage.getUsageKey(), detail.getPointKey(), toCancel, false);
-                    usageDetailRepository.save(cancelDetail);
+                    if (accrual.isManual()) {
+                        restoreToManual += toCancel;
+                    }
+
+                    detail.addCanceledAmount(toCancel);
+                    usageDetailRepository.save(detail);
+
+                    remain -= toCancel;
                 }
-
-                // 원본 상세내역에 취소 누적 (별도 필드 필요)
-                detail.addCanceledAmount(toCancel);
-                usageDetailRepository.save(detail);
-
-                remain -= toCancel;
             }
         }
 
         if (remain > 0) throw new DomainException(ApiErrorCode.CANCEL_AMOUNT_EXCEEDS_ORIGINAL_USAGE);
 
         usageRepository.save(cancelUsage);
+
+        PointWallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new DomainException(ApiErrorCode.WALLET_NOT_FOUND));
+        wallet.restore(cancelAmount, restoreToManual);
+        walletRepository.save(wallet);
+
         return cancelUsage;
     }
 }

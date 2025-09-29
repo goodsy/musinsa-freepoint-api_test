@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 public record CancelUseRequest(
-        @NotBlank String usageKey,
+        @NotBlank String userId,
+        @NotBlank String orderNo,
         @Min(1) long amount
 ) {}

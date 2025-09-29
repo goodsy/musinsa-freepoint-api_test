@@ -12,11 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.Set;
+
 @Slf4j
 @Component
 public class HeaderValidationInterceptor implements HandlerInterceptor {
 
 
+    private static final Set<String> WRITE_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
     private final ApiTestConfig config;
 
     public HeaderValidationInterceptor(ApiTestConfig config) {
@@ -44,14 +47,14 @@ public class HeaderValidationInterceptor implements HandlerInterceptor {
         String apiId = request.getHeader(ApiHeaderConstants.HEADER_MUSINSA_ID);
         String idempotencyKey = request.getHeader(ApiHeaderConstants.IDEMPOTENCY_KEY);
 
-        log.info("config.getMusinsaId(): {}", config.getMusinsaId());
-
-
         if (authorization == null || !authorization.startsWith(ApiHeaderConstants.HEADER_AUTHORIZATION_PREFIX)) {
             ApiResponse.filterSendError(response, HttpServletResponse.SC_BAD_REQUEST, ApiErrorCode.HEADER_MISSING_AUTH);
             return false;
         }
-        if (apiId == null || !config.getMusinsaId().equals(apiId)) {
+        if (!config.getMusinsaId().equals(apiId)) {
+            ApiResponse.filterSendError(response, HttpServletResponse.SC_BAD_REQUEST, ApiErrorCode.HEADER_MISSING_MUSINSA_ID);
+            return false;
+        } else if (apiId == null) {
             ApiResponse.filterSendError(response, HttpServletResponse.SC_BAD_REQUEST, ApiErrorCode.HEADER_MISSING_MUSINSA_ID);
             return false;
         }
