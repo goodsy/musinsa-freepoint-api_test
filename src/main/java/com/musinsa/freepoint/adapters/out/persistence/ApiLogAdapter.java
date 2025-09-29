@@ -2,47 +2,43 @@ package com.musinsa.freepoint.adapters.out.persistence;
 
 import com.musinsa.freepoint.application.port.out.ApiLogPort;
 import com.musinsa.freepoint.domain.log.ApiLog;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
-public class ApiLogPersistenceAdapter implements ApiLogPort {
+public class ApiLogAdapter implements ApiLogPort {
+    private final ApiLogRepository apiLogRepository;
 
-    private final ApiLogJpaRepository repo;
-
-    @Override
-    public void insertRequest(ApiLog e) {
-        var ent = ApiLog.builder()
-                .logId(e.getLogId())
-                .apiMethod(e.getApiMethod())
-                .apiUri(e.getApiUri())
-                .idempotencyKey(e.getIdempotencyKey())
-                .requestHeaders(e.getRequestHeaders())
-                .requestBody(e.getRequestBody())
-                .build();
-        repo.save(ent);
+    public ApiLogAdapter(ApiLogRepository apiLogRepository) {
+        this.apiLogRepository = apiLogRepository;
     }
+
+
+   @Override
+    public void insertRequest(ApiLog apiLog) {
+       apiLogRepository.save(apiLog);
+   }
 
     @Override
     public void updateResponse(String logId, int httpStatus, String body) {
-        repo.findById(logId).ifPresent(ent -> {
+        // 실제 구현
+        apiLogRepository.findById(logId).ifPresent(ent -> {
             ent.setStatusCode(Integer.toString(httpStatus));
             ent.setResponseBody(body);
-            repo.save(ent);
+            apiLogRepository.save(ent);
         });
     }
 
     @Override
     public Optional<ApiLog> findByIdempotencyKey(String idemKey) {
-        return repo.findByIdempotencyKey(idemKey).map(this::toDomain);
+        // 실제 구현
+        return apiLogRepository.findByIdempotencyKey(idemKey).map(this::toDomain);
     }
 
     @Override
     public Optional<ApiLog> findByLogId(String logId) {
-        return repo.findById(logId).map(this::toDomain);
+        return apiLogRepository.findById(logId).map(this::toDomain);
     }
 
     private ApiLog toDomain(ApiLog e) {
